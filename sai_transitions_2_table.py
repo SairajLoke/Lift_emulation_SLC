@@ -3,7 +3,7 @@ import pickle
 import os
 from collections import defaultdict
 
-
+TRANSITIONS_FILE_PATH = "data/moore_transitions.txt"
 AND = "&"
 serial_counter = 0
 states_vars_serial_num = {}
@@ -181,19 +181,27 @@ def single_transition_to_tree(transition):
 
     return tree
 
+
+def load_transitions_from_file(filepath):
+    with open(filepath, "r") as f:
+        lines = f.readlines()
+        return [line.strip().rstrip(';') for line in lines if line.strip()]
+    
 if __name__ == "__main__":
 
-    ALL_TRANSITIONS = [ #this is the example from Gourinath sirs handbook
-        "F_a0(-) = a0(!x1), a1(x1)",
-        "F_a1(Y1) = a1(!x2), a2(x2 & !x3 & !x4), a3(x2 & !x3 & x4), a6(x2 & x3)",
-        "F_a2(Y2) = a4(-)",
-        "F_a3(Y3) = a4(-)",
-        "F_a4(Y4) = a4(!x3), a5(x3)",
-        "F_a5(Y5) = a6(-)",
-        "F_a6(Y6) = a0(-)",
-    ]
-    # Example usage
     # input_line = "F_a1(Y1) = a3(x3), a4(!x3 ∧ !x10), a0(!x3 ∧ x10)"
+    
+    # ALL_TRANSITIONS = [ #this is the example from Gourinath sirs handbook
+    #     "F_a0(-) = a0(!x1), a1(x1)",
+    #     "F_a1(Y1) = a1(!x2), a2(x2 & !x3 & !x4), a3(x2 & !x3 & x4), a6(x2 & x3)",
+    #     "F_a2(Y2) = a4(-)",
+    #     "F_a3(Y3) = a4(-)",
+    #     "F_a4(Y4) = a4(!x3), a5(x3)",
+    #     "F_a5(Y5) = a6(-)",
+    #     "F_a6(Y6) = a0(-)",
+    # ]
+    ALL_TRANSITIONS = load_transitions_from_file(TRANSITIONS_FILE_PATH)
+    
 
     for transition in ALL_TRANSITIONS:
         print(f"Processing transition: {transition}")

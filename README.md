@@ -1,5 +1,15 @@
 # Lift_emulation_SLC
 
+## installations
+pip -r requirements.txt 
+sudo apt-get install python3-tk graphviz
+
+## RUN
+python3 sai_graph_generator.py 
+python3 sai_transitions_2_table.py 
+
+
+
 Debugging each terms in the individual steps (transition graphs, eqns, table) was hard...so i automated the creation given just a flow_chart 
 
 To check for Lift calls in another process?

@@ -5,11 +5,13 @@
 # pip install graphviz
 
 from graphviz import Digraph
+import os
 from collections import defaultdict
 
 #tobe careful wrt
 # bool values of conditionals
-
+DATA_DIR = "data/"
+os.makedirs(DATA_DIR, exist_ok=True)
 
 # Store transitions for each state
 state_transition_map = defaultdict(list) #for automating the state transition equations 
@@ -65,7 +67,7 @@ IS_QUEUE_EMPTY = "x10"  # Wait for Floor Requests & Put Requests in a Queue
 
 #Operations
 NOT = "!" #¬"
-# AND = "∧" not using implicitly assumed 
+AND = "&" #using as need in the parsing code(parsing of the transition equations)
 # OR = "∨"
 
 
@@ -82,32 +84,32 @@ for state, output in state_output_map.items():
 
 # Define transitions using logical expressions
 # from a0
-add_transition(WAITING, WAITING, label=f"{NOT}{IS_CALLED} {NOT}{IS_IDLE_TIMED}")
-add_transition(WAITING, IDLE,    label=f"{NOT}{IS_CALLED} {IS_IDLE_TIMED}")
+add_transition(WAITING, WAITING, label=f"{NOT}{IS_CALLED} {AND} {NOT}{IS_IDLE_TIMED}")
+add_transition(WAITING, IDLE,    label=f"{NOT}{IS_CALLED} {AND} {IS_IDLE_TIMED}")
 add_transition(WAITING, QUEUE_UPDATED, label=f"{IS_CALLED}")
 
 #from a1
 add_transition(IDLE, DOOR_CLOSED, label=f"{NOT}{IS_DOOR_CLOSED}")
-add_transition(IDLE, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {NOT}{IS_QUEUE_EMPTY}")
-add_transition(IDLE, WAITING,     label=f"{IS_DOOR_CLOSED}  {IS_QUEUE_EMPTY}")
+add_transition(IDLE, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {AND} {NOT}{IS_QUEUE_EMPTY}")
+add_transition(IDLE, WAITING,     label=f"{IS_DOOR_CLOSED}  {AND} {IS_QUEUE_EMPTY}")
 
 #from a2
 add_transition(QUEUE_UPDATED, DOOR_CLOSED, label=f"{NOT}{IS_DOOR_CLOSED} ")
-add_transition(QUEUE_UPDATED, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {NOT}{IS_QUEUE_EMPTY}")
-add_transition(QUEUE_UPDATED, WAITING, label=f"{IS_DOOR_CLOSED}  {IS_QUEUE_EMPTY}")
+add_transition(QUEUE_UPDATED, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {AND} {NOT}{IS_QUEUE_EMPTY}")
+add_transition(QUEUE_UPDATED, WAITING,     label=f"{IS_DOOR_CLOSED}  {AND} {IS_QUEUE_EMPTY}")
 
 #from a3
 add_transition(DOOR_CLOSED, DOOR_CLOSED, label=f"{NOT}{IS_DOOR_CLOSED}")
-add_transition(DOOR_CLOSED, WAITING,    label=f"{IS_DOOR_CLOSED}  {IS_QUEUE_EMPTY}")
-add_transition(DOOR_CLOSED, TARGET_SET, label=f"{IS_DOOR_CLOSED}  {NOT}{IS_QUEUE_EMPTY}")
+add_transition(DOOR_CLOSED, WAITING,     label=f"{IS_DOOR_CLOSED}  {AND} {IS_QUEUE_EMPTY}")
+add_transition(DOOR_CLOSED, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {AND} {NOT}{IS_QUEUE_EMPTY}")
 
 #from a4
-add_transition(TARGET_SET, QUEUE_POPPED, label=f"{IS_TARGET_REACHED}")
-add_transition(TARGET_SET, MOTORS_STOPPED,  label=f"{NOT}{IS_TARGET_REACHED}  {IS_VALID_STOP}")
-add_transition(TARGET_SET, MOTORS_MOVING,label=f"{NOT}{IS_TARGET_REACHED}  {NOT}{IS_VALID_STOP}")
+add_transition(TARGET_SET, QUEUE_POPPED,    label=f"{IS_TARGET_REACHED}")
+add_transition(TARGET_SET, MOTORS_STOPPED,  label=f"{NOT}{IS_TARGET_REACHED}  {AND} {IS_VALID_STOP}")
+add_transition(TARGET_SET, MOTORS_MOVING,   label=f"{NOT}{IS_TARGET_REACHED}  {AND} {NOT}{IS_VALID_STOP}")
 
 #from a5
-add_transition(QUEUE_POPPED, WAITING,     label=f"{IS_LIFT_IDLE}")
+add_transition(QUEUE_POPPED, WAITING,        label=f"{IS_LIFT_IDLE}")
 add_transition(QUEUE_POPPED, MOTORS_STOPPED, label=f"{NOT}{IS_LIFT_IDLE}")
 
 # from a12
@@ -124,22 +126,22 @@ add_transition(MOTORS_MOVING, UPDATED_CURRFLOOR, label=f"-")
 #from a8
 add_transition(UPDATED_CURRFLOOR, QUEUE_POPPED, label=f"{IS_TARGET_REACHED}")
 #prolly some commong state betw a4 a8
-add_transition(UPDATED_CURRFLOOR, MOTORS_STOPPED, label=f"{NOT}{IS_TARGET_REACHED}  {IS_VALID_STOP}")
-add_transition(UPDATED_CURRFLOOR, MOTORS_MOVING,  label=f"{NOT}{IS_TARGET_REACHED}  {NOT}{IS_VALID_STOP}")
+add_transition(UPDATED_CURRFLOOR, MOTORS_STOPPED, label=f"{NOT}{IS_TARGET_REACHED}  {AND} {IS_VALID_STOP}")
+add_transition(UPDATED_CURRFLOOR, MOTORS_MOVING,  label=f"{NOT}{IS_TARGET_REACHED}  {AND} {NOT}{IS_VALID_STOP}")
 
 #from a9 ( 4 outs)
 add_transition(AWAIT_FLOOR_REQUESTS, OVERLOADED,             label=f"{IS_OVERLOADED}")
-add_transition(AWAIT_FLOOR_REQUESTS, REDUNDANT_CALL_REMOVED, label=f"{NOT}{IS_OVERLOADED}  {IS_VALID_FLOOR_REQUESTS} ")
-add_transition(AWAIT_FLOOR_REQUESTS, REDUNDANT_CALL_REMOVED, label=f"{NOT}{IS_OVERLOADED}  {NOT}{IS_VALID_FLOOR_REQUESTS}  {IS_FLOORREQ_WAITTIME_OUT}")
-add_transition(AWAIT_FLOOR_REQUESTS, AWAIT_FLOOR_REQUESTS,   label=f"{NOT}{IS_OVERLOADED}  {NOT}{IS_VALID_FLOOR_REQUESTS}  {NOT}{IS_FLOORREQ_WAITTIME_OUT}")
+add_transition(AWAIT_FLOOR_REQUESTS, REDUNDANT_CALL_REMOVED, label=f"{NOT}{IS_OVERLOADED}  {AND} {IS_VALID_FLOOR_REQUESTS} ")
+add_transition(AWAIT_FLOOR_REQUESTS, REDUNDANT_CALL_REMOVED, label=f"{NOT}{IS_OVERLOADED}  {AND} {NOT}{IS_VALID_FLOOR_REQUESTS}  {AND} {IS_FLOORREQ_WAITTIME_OUT}")
+add_transition(AWAIT_FLOOR_REQUESTS, AWAIT_FLOOR_REQUESTS,   label=f"{NOT}{IS_OVERLOADED}  {AND} {NOT}{IS_VALID_FLOOR_REQUESTS}  {AND} {NOT}{IS_FLOORREQ_WAITTIME_OUT}")
 
 
 #from a10
 add_transition(OVERLOADED, AWAIT_FLOOR_REQUESTS, label=f"-")
 
 #from a11
-add_transition(REDUNDANT_CALL_REMOVED, WAITING,     label=f"{IS_DOOR_CLOSED}  {IS_QUEUE_EMPTY}")
-add_transition(REDUNDANT_CALL_REMOVED, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {NOT}{IS_QUEUE_EMPTY} ")
+add_transition(REDUNDANT_CALL_REMOVED, WAITING,     label=f"{IS_DOOR_CLOSED}  {AND} {IS_QUEUE_EMPTY}")
+add_transition(REDUNDANT_CALL_REMOVED, TARGET_SET,  label=f"{IS_DOOR_CLOSED}  {AND} {NOT}{IS_QUEUE_EMPTY} ")
 add_transition(REDUNDANT_CALL_REMOVED, DOOR_CLOSED, label=f"{NOT}{IS_DOOR_CLOSED}")
 
 
@@ -150,11 +152,11 @@ add_transition(REDUNDANT_CALL_REMOVED, DOOR_CLOSED, label=f"{NOT}{IS_DOOR_CLOSED
 #     s.node("a3")
 
 # Save and optionally render
-dot.render("moore_machine_sai_lift.dot", view=True)  # Creates lift_state_machine.dot and lift_state_machine.png
+dot.render(f"{DATA_DIR}/moore_machine_sai_lift.dot", view=True)  # Creates lift_state_machine.dot and lift_state_machine.png
 
 
 
-with open("moore_transitions.txt", "w") as f:
+with open(f"{DATA_DIR}/moore_transitions.txt", "w") as f:
     for from_state in state_output_map:
         output = state_output_map[from_state]
         transitions = state_transition_map[from_state]
