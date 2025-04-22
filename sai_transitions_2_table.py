@@ -1,5 +1,8 @@
 import re
+import pickle
+import os
 from collections import defaultdict
+
 
 AND = "&"
 serial_counter = 0
@@ -9,22 +12,7 @@ curr_function_name = None
 
 TABLE_NEXT_STATE_MAPPING = []
 
-class TABLE_ELEMENTS_NEXT_STATE_MAPPING:
-    serial_num=0
-    node_type='_' #'a', 'x'
-    node_idx=0
-    successor_0 = None
-    successor_1 = None
-    BDD_NAME = None
-
-    def __init__(self, serial_num, node_type, node_idx, successor_0, successor_1, BDD_NAME):
-        self.serial_num = serial_num
-        self.node_type = node_type
-        self.node_idx = node_idx
-        self.successor_0 = successor_0
-        self.successor_1 = successor_1
-        self.BDD_NAME = BDD_NAME
-
+from lift_utils import TABLE_ELEMENTS_NEXT_STATE_MAPPING
 
 
 def parse_transition_function(line):
@@ -89,7 +77,7 @@ def build_tree(transitions, vars_order, node_map={}):
         TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
             serial_num=node_map[state]["serial"],
             node_type='a',
-            node_idx= int(node_map[state]["state"].replace("a", "")),
+            node_index= int(node_map[state]["state"].replace("a", "")),
             successor_0='-', #need to update these after all the indexing is done
             successor_1=state, #bascially change the state to the state's index in table
             BDD_NAME= curr_function_name #as leaf...the successors are the same as the state itself...also serial os state 
@@ -112,7 +100,7 @@ def build_tree(transitions, vars_order, node_map={}):
         TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
             serial_num=node_map[state]["serial"],
             node_type='a',
-            node_idx= int(node_map[state]["state"].replace("a", "")),
+            node_index= int(node_map[state]["state"].replace("a", "")),
             successor_0='-', #need to update these after all the indexing is done
             successor_1=state, #bascially change the state to the state's index in table
             BDD_NAME= curr_function_name #as leaf...the successors are the same as the state itself...also serial os state 
@@ -130,8 +118,8 @@ def build_tree(transitions, vars_order, node_map={}):
         raise ValueError("No variable left to split, but unresolved transitions remain.")
     
     # Index the decision node
-    node_idx = serial_counter
-    # var_serial_num[current_var] = node_idx not useful ig..coz same variable can comeupt multiple times in different transition lines
+    node_index = serial_counter
+    # var_serial_num[current_var] = node_index not useful ig..coz same variable can comeupt multiple times in different transition lines
     serial_counter += 1
     
 
@@ -158,16 +146,16 @@ def build_tree(transitions, vars_order, node_map={}):
     true_tree = build_tree(true_branch, vars_order, node_map)
 
     TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
-        serial_num=node_idx,
+        serial_num=node_index,
         node_type='x',
-        node_idx=int(current_var.replace("x", "")),
+        node_index=int(current_var.replace("x", "")),
         successor_0= false_tree["serial"],  # To be filled later
         successor_1= true_tree["serial"],  # To be filled later
         BDD_NAME=curr_function_name
     ))
 
     return {
-        "serial": node_idx,
+        "serial": node_index,
         "var": current_var,
         "false": false_tree,
         "true": true_tree,
@@ -214,12 +202,17 @@ if __name__ == "__main__":
 
     print("Final Table Entries:")
     sorted_table = sorted(TABLE_NEXT_STATE_MAPPING, key=lambda x: x.serial_num)
+
+    #update the successors in the table entries
+    #recursively traverse the tree and update the successors
     for entry in sorted_table:
         if(entry.node_type == 'a'):
             entry.successor_1 = states_vars_serial_num[entry.successor_1]
+        print(f"Serial: {entry.serial_num} | Node Type: {entry.node_type} | Node Index: {entry.node_index} | Successor 0: {entry.successor_0} | Successor 1: {entry.successor_1} | BDD Name: {entry.BDD_NAME}")
 
-        print(f"Serial: {entry.serial_num} | Node Type: {entry.node_type} | Node Index: {entry.node_idx} | Successor 0: {entry.successor_0} | Successor 1: {entry.successor_1} | BDD Name: {entry.BDD_NAME}")
-    #update the successors in the table entries
-    #recursively traverse the tree and update the successors
+    # Save
+    os.makedirs("data", exist_ok=True)
+    with open("data/table_next_state_mapping.pkl", "wb") as f:
+        pickle.dump(TABLE_NEXT_STATE_MAPPING, f)
 
 
