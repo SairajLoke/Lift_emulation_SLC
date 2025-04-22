@@ -1,6 +1,6 @@
 # Lift_emulation_SLC
 
-
+Debugging each terms in the individual steps (transition graphs, eqns, table) was hard...so i automated the creation given just a flow_chart 
 
 To check for Lift calls in another process?
 
