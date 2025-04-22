@@ -1,187 +1,227 @@
-# import re
-
-# def parse_expression(expr):
-#     match = re.match(r"a(\d+)\(([^)]*)\)", expr.strip())
-#     if not match:
-#         return None
-#     target = int(match.group(1))
-#     condition = match.group(2)
-#     variables = condition.split() if condition != '-' else []
-#     return (variables, target)
-
-# def load_transitions(file_path):
-#     transitions = {}
-#     with open(file_path, 'r') as file:
-#         for line in file:
-#             line = line.strip().strip(';')
-#             if not line or '=' not in line:
-#                 continue
-#             lhs, rhs = line.split('=')
-#             func_name = lhs.strip()
-#             expressions = [expr.strip() for expr in rhs.split(',')]
-#             transitions[func_name] = expressions
-#     return transitions
-
-# def generate_slc_table(transitions):
-#     node_id = 0
-#     rows = []
-
-#     for func_name, expressions in transitions.items():
-#         for expr in expressions:
-#             parsed = parse_expression(expr)
-#             if parsed is None:
-#                 continue
-#             vars, target = parsed
-
-#             if not vars:
-#                 # Terminal node
-#                 rows.append({
-#                     'node_type': 'a',
-#                     'node_index': target,
-#                     'successor_0': 0,
-#                     'successor_1': 0,
-#                     'bdd': func_name
-#                 })
-#                 continue
-
-#             # For now: only look at first variable
-#             var = vars[0].replace('!', '')
-#             node_type = 'x' if 'x' in var else 'a'
-
-#             # Dummy successor values, for illustrative SLC table
-#             successor_0 = node_id + 1
-#             successor_1 = node_id + 2
-#             rows.append({
-#                 'node_type': node_type,
-#                 'node_index': int(var[1:]),
-#                 'successor_0': successor_0,
-#                 'successor_1': successor_1,
-#                 'bdd': func_name
-#             })
-#             node_id += 2
-#     return rows
-
-# def write_header(rows, output_path="slc_table.h"):
-#     with open(output_path, 'w') as f:
-#         f.write("struct TransitionRow {\n")
-#         f.write("    char node_type;\n")
-#         f.write("    int node_index;\n")
-#         f.write("    int successor_0;\n")
-#         f.write("    int successor_1;\n")
-#         f.write("    const char* bdd;\n")
-#         f.write("};\n\n")
-#         f.write("const TransitionRow SLC_TABLE[] = {\n")
-#         for row in rows:
-#             f.write(f"    {{'{row['node_type']}', {row['node_index']}, {row['successor_0']}, {row['successor_1']}, \"{row['bdd']}\"}},\n")
-#         f.write("};\n")
-
-# # === Run the process ===
-# if __name__ == "__main__":
-#     transitions = load_transitions("moore_transitions.txt")
-#     slc_rows = generate_slc_table(transitions)
-#     write_header(slc_rows)
-#     print("SLC table written to slc_table.h")
 import re
+from collections import defaultdict
 
-class TransitionRow:
-    def __init__(self, node_type, node_index, successor_0, successor_1, bdd):
+AND = "&"
+serial_counter = 0
+states_vars_serial_num = {}
+var_serial_num = {}
+curr_function_name = None
+
+TABLE_NEXT_STATE_MAPPING = []
+
+class TABLE_ELEMENTS_NEXT_STATE_MAPPING:
+    serial_num=0
+    node_type='_' #'a', 'x'
+    node_idx=0
+    successor_0 = None
+    successor_1 = None
+    BDD_NAME = None
+
+    def __init__(self, serial_num, node_type, node_idx, successor_0, successor_1, BDD_NAME):
+        self.serial_num = serial_num
         self.node_type = node_type
-        self.node_index = node_index
+        self.node_idx = node_idx
         self.successor_0 = successor_0
         self.successor_1 = successor_1
-        self.bdd = bdd
+        self.BDD_NAME = BDD_NAME
 
-    def __repr__(self):
-        return f"    {{'{self.node_type}', {self.node_index}, {self.successor_0}, {self.successor_1}, \"{self.bdd}\"}},"
 
-def parse_expression(expr):
-    match = re.match(r"a(\d+)\(([^)]*)\)", expr.strip())
-    if not match:
-        return None
-    target = int(match.group(1))
-    condition = match.group(2)
-    variables = condition.split() if condition != '-' else []
-    return variables, target
 
-def load_transitions(file_path):
-    transitions = {}
-    with open(file_path, 'r') as f:
-        for line in f:
-            if '=' not in line:
+def parse_transition_function(line):
+    global serial_counter, states_vars_serial_num, curr_function_name
+
+    # "F_a1(Y1) = a3(!x3), a4(x3 ∧ !x10), a0(x3 ∧ x10)"  # Example input line
+    # TODO also need to handle the case where there are no conditions (e.g., "F_a1(Y1) = a3(-)")
+
+    # Extract the function name and the transitions
+    head, expressions = line.split("=")
+    func_name = head.strip().split('(')[0].strip()
+    from_state = func_name.split("_")[1] 
+
+    #same state actually has multiple entries in the table at diff serial num..
+    # but the entry row for all instances is the same except BDD entry
+    # so below line  not needed 
+    states_vars_serial_num[from_state] = serial_counter #not to change the counter here
+    curr_function_name = func_name #set the current function name for the state
+    #sets the serial number for the state's successive conditional variable's serial number or
+        # the next state serial number in the table (if direct transition)
+
+    # Parse each state transition
+    transitions = []
+    for part in expressions.split(","):
+        match = re.match(r"(a\d+)\((.+)\)", part.strip())
+        if not match:
+            raise ValueError(f"Invalid transition format: {part}")
+        state, condition = match.groups()
+        # condition = condition.replace("∧", "and")  # normalize AND
+        literals = [lit.strip() for lit in condition.split(AND) ]
+        transitions.append((state, literals))
+        print(f"Parsed transition: {state} -> {literals}")
+    
+    return func_name, transitions
+
+def extract_vars(sub_transitions):
+    # Get all unique x variables from conditions
+    var_set = set()
+    print(f"Sub-transitions: {sub_transitions}")
+    for state_name, literals in sub_transitions:
+        for lit in literals : #and lit.strip() != '-'
+            if lit == "-":
                 continue
-            lhs, rhs = line.strip().strip(';').split('=')
-            func_name = lhs.strip()
-            print(f"Parsing func_name: {func_name} AND RHS: {rhs}")
-            transitions[func_name] = [expr.strip() for expr in rhs.split(',')]
-            print(f"Parsed transitions: {transitions[func_name]}")
-    return transitions
+            var = lit.replace("!", "")
+            var_set.add(var)
+    # Sort by natural order (x3, x10, etc.)
+
+    print(f"Extracted variables: {var_set}")
+    return sorted(var_set, key=lambda v: int(v[1:]))
 
 
-node_idx_map = {} #to be used to get the idx of the node(a/x) afterwards
+def build_tree(transitions, vars_order, node_map={}):
+    global serial_counter
+
+    if len(vars_order) == 0:
+        print("Direct transition found, no variables left to split.")
+        state = transitions[0][0]
+        # if state not in node_map:
+        node_map[state] = {"serial": serial_counter, "state": state} # for json visualization
+        serial_counter += 1
+
+        TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
+            serial_num=node_map[state]["serial"],
+            node_type='a',
+            node_idx= int(node_map[state]["state"].replace("a", "")),
+            successor_0='-', #need to update these after all the indexing is done
+            successor_1=state, #bascially change the state to the state's index in table
+            BDD_NAME= curr_function_name #as leaf...the successors are the same as the state itself...also serial os state 
+        ))
+
+        return node_map[state]
 
 
-def traverse()
+    # Recursively buildin the tree
+    if all(len(cond) == 0 for _, cond in transitions):
+        # All transitions are resolved (leaf)
+        print("Leaf node reached with transitions:", transitions)
+        state = transitions[0][0]
+        if state not in node_map:
+            node_map[state] = {"serial": serial_counter, "state": state}
+            # state_serial_num[state] = serial_counter not here..butrather start of every new transition line from that state ...
+            serial_counter += 1
 
-def build_table(transitions):
-    table = []
-    node_id = 0
+            #update table entry
+            TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
+                serial_num=node_map[state]["serial"],
+                node_type='a',
+                node_idx= int(node_map[state]["state"].replace("a", "")),
+                successor_0='-', #need to update these after all the indexing is done
+                successor_1=state, #bascially change the state to the state's index in table
+                BDD_NAME= curr_function_name #as leaf...the successors are the same as the state itself...also serial os state 
+            ))
 
-    for func_name, expressions in transitions.items():
-        print(f"Processing function: {func_name}")
-        
-        from_state = func_name.split('(')[0][2:]  # Extract a1 from F_a1, or a10 from  F_a10 , etc
-        # node_idx_map[from_state] = node_id #used in assigning index afterwareds 
-        # node_id += 1
-        print(f"\tFrom state: {from_state}, Node ID: {node_id}")
-        
-        #Im assuming the order of x_idx is correct increasing so the tree can be built properly
-        
-        
-        for expr in expressions:
-            print(f"\tParsing expression: {expr}")
-            vars, target = parse_expression(expr)
-            print(f"\t...  vars: {vars}  targets: {target}")
-            
-            
-            if not vars: # there happens tobe only 1 term in the expr ..like a1(-)
-                # Terminal node
-                table.append(TransitionRow('a', target, '-', f"a{target}", f"{func_name}"))  
-                # two_node_idx_map[f""]
-                #fill the successor_1 with the target for now, later in code I can get the idx of the target node in BDD table, due to node_idx_map[from_state] = node_id 
-                
-            else:
-                # if vars assume sorted order 
-                
-                var_index = int(vars[0].replace('!', '').replace('x', ''))
-                table.append(TransitionRow('x', var_index, node_id + 1, node_id + 2, f"{func_name}"))
-                node_id += 2
-                
-                
+        return node_map[state]
     
-    #update succs in the table
     
+    current_var = None
+    for var in vars_order:
+        if any(var in lit or f"!{var}" in lit      for _, cond in transitions for lit in cond):
+            current_var = var
+            break
+    if current_var is None:
+        raise ValueError("No variable left to split, but unresolved transitions remain.")
     
+    # Index the decision node
+    node_idx = serial_counter
+    # var_serial_num[current_var] = node_idx not useful ig..coz same variable can comeupt multiple times in different transition lines
+    serial_counter += 1
     
-    return table
 
-def write_header(table, filename="slc_table.h"):
-    with open(filename, 'w') as f:
-        f.write("struct TransitionRow {\n")
-        f.write("    char node_type;\n")
-        f.write("    int node_index;\n")
-        f.write("    int successor_0;\n")
-        f.write("    int successor_1;\n")
-        f.write("    const char* bdd;\n")
-        f.write("};\n\n")
-        f.write("const TransitionRow SLC_TABLE[] = {\n")
-        for row in table:
-            f.write(f"{repr(row)}\n")
-        f.write("};\n")
+    true_branch = []
+    false_branch = []
+    
+    for state, cond in transitions:
+        matched = False
+        for lit in cond:
+            if lit == current_var:
+                true_branch.append((state, [l for l in cond if l != lit]))
+                matched = True
+                break
+            elif lit == f"!{current_var}":
+                false_branch.append((state, [l for l in cond if l != lit]))
+                matched = True
+                break
+        if not matched:
+            # If the variable isn't in the condition, include in both branches
+            true_branch.append((state, cond.copy()))
+            false_branch.append((state, cond.copy()))
+    
+    false_tree =  build_tree(false_branch, vars_order, node_map)
+    true_tree = build_tree(true_branch, vars_order, node_map)
 
-# Main
+    TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
+        serial_num=node_idx,
+        node_type='x',
+        node_idx=int(current_var.replace("x", "")),
+        successor_0= false_tree["serial"],  # To be filled later
+        successor_1= true_tree["serial"],  # To be filled later
+        BDD_NAME=curr_function_name
+    ))
+
+    return {
+        "serial": node_idx,
+        "var": current_var,
+        "false": false_tree,
+        "true": true_tree,
+    }
+
+
+def single_transition_to_tree(transition):
+    
+    
+    func_name, transitions = parse_transition_function(transition)
+    print(f"Function name: {func_name}")
+    print(f"Transitions: {transitions}")
+
+    vars_order = extract_vars(transitions)
+    tree = build_tree(transitions, vars_order)
+
+    print(f"State serial numbers: {states_vars_serial_num}")
+    # print(f"Variable serial numbers: {var_serial_num}")
+    print(serial_counter)
+
+    import json
+    print(json.dumps(tree, indent=2))
+
+    return tree
+
 if __name__ == "__main__":
-    transitions = load_transitions("moore_transitions.txt")
-    print("-------------Loaded transitions: --------------")
-    table = build_table(transitions)
-    write_header(table)
-    print(f"Wrote {len(table)} rows to sai_lift_slc_table.h")
+
+    ALL_TRANSITIONS = [ #this is the example from Gourinath sirs handbook
+        "F_a0(-) = a0(!x1), a1(x1)",
+        "F_a1(Y1) = a1(!x2), a2(x2 & !x3 & !x4), a3(x2 & !x3 & x4), a4(x2 & x3)",
+        "F_a2(Y2) = a4(-)",
+        "F_a3(Y3) = a4(-)",
+        "F_a4(Y4) = a4(!x3), a5(x3)",
+        "F_a5(Y5) = a6(-)",
+        "F_a6(Y6) = a0(-)",
+    ]
+    # Example usage
+    # input_line = "F_a1(Y1) = a3(x3), a4(!x3 ∧ !x10), a0(!x3 ∧ x10)"
+
+    for transition in ALL_TRANSITIONS:
+        print(f"Processing transition: {transition}")
+        single_transition_to_tree(transition)
+        print("\n" + "="*50 + "\n")
+
+    print("Final Table Entries:")
+    sorted_table = sorted(TABLE_NEXT_STATE_MAPPING, key=lambda x: x.serial_num)
+    for entry in sorted_table:
+        if(entry.node_type == 'a'):
+            entry.successor_1 = states_vars_serial_num[entry.successor_1]
+
+        print(f"Serial: {entry.serial_num},{entry.node_type}{entry.node_idx} {entry.successor_0} {entry.successor_1}, BDD Name: {entry.BDD_NAME}")
+    
+    
+    #update the successors in the table entries
+    #recursively traverse the tree and update the successors
+
+
