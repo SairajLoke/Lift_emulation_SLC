@@ -21,3 +21,5 @@ After getting in lift one must press a floor in correct direction ...else we wai
 -   Movement control between floors
 -   Weight limit checks
 -   Floor request handling
+
+- I also provide an option to create space optimized state-transition table..that removes repeated entries of same stae but in different BDDs 
