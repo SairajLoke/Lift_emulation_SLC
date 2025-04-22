@@ -31,7 +31,7 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory): #Co
             time.sleep(1)
             state = node.node_type + str(node.node_index)
             print(f"[============= In state/var: {state}, {LIFT.state_name_map[state]} =================]")
-            print(" Current condition:", LIFT.condition)
+            # print(" Current condition:", LIFT.condition)
             if LIFT.condition == None:
                 print("Condition is None, exiting current cycle.")
                 break
@@ -44,18 +44,25 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory): #Co
 
             elif node.node_type == 'a':
                 is_state = 1
-                print(f"\n---- Action node {LIFT.table_index}: Executing action {LIFT.state_name_map[state]} ----")
+                # print(f"\n---- Action node {LIFT.table_index}: Executing action {LIFT.state_name_map[state]} ----")
                 # if control_memory[index].control is not None:
                 #     print("Executing control:", control_memory[index].control)
                     # Simulate output action, e.g., Y1, Y2, etc.
+                LIFT.current_floor += 1
                 LIFT.table_index = node.successor_1
+                #-------------------------------------------
+                if LIFT.current_floor > 2*MAX_FLOOR:
+                    if (len(request_list)>0):
+                        request_list.pop(0)  # Remove the first request
+                    LIFT.current_floor = 0
+                #------------------------------------------
 
 
             index = BDD_Table[LIFT.table_index].node_index
             print(" Current state index:", LIFT.table_index)
             
-            print('control_memory:', control_memory.control_memory_array[index])
-            print('control_memory:', control_memory.control_memory_array[index].imm_transition)
+            # print('control_memory:', control_memory.control_memory_array[index])
+            # print('control_memory:', control_memory.control_memory_array[index].imm_transition)
             
             if (is_state == 0 and not control_memory.control_memory_array[index].imm_transition):  
                 #the while in the handbook is for continuing..this logic is for breaking
@@ -75,10 +82,10 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory): #Co
 
 
 
-def run_slc_driver(request_list):
+def run_slc_driver(request_list, LIFT):
     try:
         # Initializing the SLC system and loadin the BDD table
-        LIFT = LIFT_SYSTEM() 
+        # LIFT = LIFT_SYSTEM() 
         control_memory = ControlMemory(LIFT.state_name_map)
         
         with open(BDD_TABLE_PATH, "rb") as f:
