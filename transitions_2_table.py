@@ -103,20 +103,20 @@ def build_tree(transitions, vars_order, node_map={}):
         # All transitions are resolved (leaf)
         print("Leaf node reached with transitions:", transitions)
         state = transitions[0][0]
-        if state not in node_map:
-            node_map[state] = {"serial": serial_counter, "state": state}
-            # state_serial_num[state] = serial_counter not here..butrather start of every new transition line from that state ...
-            serial_counter += 1
+        # if state not in node_map:
+        node_map[state] = {"serial": serial_counter, "state": state}
+        # state_serial_num[state] = serial_counter not here..butrather start of every new transition line from that state ...
+        serial_counter += 1
 
-            #update table entry
-            TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
-                serial_num=node_map[state]["serial"],
-                node_type='a',
-                node_idx= int(node_map[state]["state"].replace("a", "")),
-                successor_0='-', #need to update these after all the indexing is done
-                successor_1=state, #bascially change the state to the state's index in table
-                BDD_NAME= curr_function_name #as leaf...the successors are the same as the state itself...also serial os state 
-            ))
+        #update table entry
+        TABLE_NEXT_STATE_MAPPING.append(TABLE_ELEMENTS_NEXT_STATE_MAPPING(
+            serial_num=node_map[state]["serial"],
+            node_type='a',
+            node_idx= int(node_map[state]["state"].replace("a", "")),
+            successor_0='-', #need to update these after all the indexing is done
+            successor_1=state, #bascially change the state to the state's index in table
+            BDD_NAME= curr_function_name #as leaf...the successors are the same as the state itself...also serial os state 
+        ))
 
         return node_map[state]
     
@@ -197,7 +197,7 @@ if __name__ == "__main__":
 
     ALL_TRANSITIONS = [ #this is the example from Gourinath sirs handbook
         "F_a0(-) = a0(!x1), a1(x1)",
-        "F_a1(Y1) = a1(!x2), a2(x2 & !x3 & !x4), a3(x2 & !x3 & x4), a4(x2 & x3)",
+        "F_a1(Y1) = a1(!x2), a2(x2 & !x3 & !x4), a3(x2 & !x3 & x4), a6(x2 & x3)",
         "F_a2(Y2) = a4(-)",
         "F_a3(Y3) = a4(-)",
         "F_a4(Y4) = a4(!x3), a5(x3)",
@@ -218,9 +218,7 @@ if __name__ == "__main__":
         if(entry.node_type == 'a'):
             entry.successor_1 = states_vars_serial_num[entry.successor_1]
 
-        print(f"Serial: {entry.serial_num},{entry.node_type}{entry.node_idx} {entry.successor_0} {entry.successor_1}, BDD Name: {entry.BDD_NAME}")
-    
-    
+        print(f"Serial: {entry.serial_num} | Node Type: {entry.node_type} | Node Index: {entry.node_idx} | Successor 0: {entry.successor_0} | Successor 1: {entry.successor_1} | BDD Name: {entry.BDD_NAME}")
     #update the successors in the table entries
     #recursively traverse the tree and update the successors
 
