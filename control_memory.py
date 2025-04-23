@@ -90,7 +90,7 @@ class ControlMemoryFunctions:
 
     def handle_target_set_state(self, lift: LIFT_SYSTEM, request_list, motor_controller):
         print(f"\n@@@ Lift Target floor set to {lift.target_floor}...by {request_list[0]}")
-        if not len(request_list) == 0:
+        if len(request_list) == 0:
             raise ValueError("Request list is empty, cannot set target floor.")
         
         type, floor, direction = request_list[0]  # Assuming the first request is the target

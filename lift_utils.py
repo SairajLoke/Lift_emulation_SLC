@@ -41,8 +41,8 @@ class LIFT_SYSTEM:
     def __init__(self):
         #constants in this system=-----------------
         self.HOME_FLOOR = 0
-        self.MAX_IDLE_TIME = int(0.2*60) #seconds 
-        self.MAX_FLOOR_REQUEST_WAIT_TIME = int(0.2*60) #seconds #at the end of the served floors it will wait for this time before closing the doors
+        self.MAX_IDLE_TIME = int(2*60) #int(0.2*60) #seconds 
+        self.MAX_FLOOR_REQUEST_WAIT_TIME = int(0.5*60) #seconds #at the end of the served floors it will wait for this time before closing the doors
         self.MAX_WEIGHT = 700 #kg
         # self.MAX_CAPACITY = 10 around 68 kg avg ig generallyh...
 
@@ -51,6 +51,7 @@ class LIFT_SYSTEM:
         self.current_state_index = 0
         self.previous_state_index = 0
         self.current_direction = 0
+        self.prev_req_direction = 0
         self.current_floor = 0
         self.target_floor = 0
         # self.current_state_name = "WAITING"
@@ -85,6 +86,7 @@ class LIFT_SYSTEM:
             "a11": "REDUNDANT_CALL_REMOVED",
             "a12": "MOTORS_STOPPED"
         }
+        
 
         self.condition = None 
         

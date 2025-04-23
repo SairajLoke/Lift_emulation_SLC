@@ -26,12 +26,11 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, moto
         index = BDD_Table[LIFT.table_index].node_index    #state/ variable subscript number 
         
         while True : # may be ? LIFT.loop_counter < LIFT.MAX_EXECUTION_TIME:, no separate do while loop in python 
+            
             node = BDD_Table[LIFT.table_index]
             print(f"Visiting node {LIFT.table_index}: Type={node.node_type}, Index={node.node_index}, Successors=({node.successor_0}, {node.successor_1})")
-            time.sleep(1)
+            # time.sleep(1)
             state = node.node_type + str(node.node_index)
-            print(f"[============= In state/var: {state}, {LIFT.state_name_map[state]} =================]")
-            # print(" Current condition:", LIFT.condition)
             if LIFT.condition == None:
                 print("Condition is None, exiting current cycle.")
                 break
@@ -43,6 +42,8 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, moto
                     LIFT.table_index = node.successor_1
 
             elif node.node_type == 'a':
+                print(f"[============= In state/var: {state}, {LIFT.state_name_map[state]} =================]")
+
                 is_state = 1
                 # print(f"\n---- Action node {LIFT.table_index}: Executing action {LIFT.state_name_map[state]} ----")
                 # if control_memory[index].control is not None:
@@ -63,13 +64,13 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, moto
             index = BDD_Table[LIFT.table_index].node_index
             print(" Current state index:", LIFT.table_index)
             
+            LIFT.loop_counter += 1 
             if (is_state == 1 and not control_memory.control_memory_array[index].imm_transition):  
                 #the while in the handbook is for continuing..this logic is for breaking
                 print(f"****** No immediate transition, waiting for next condition to change ******")
                 break
             
             
-            LIFT.loop_counter += 1 
         LIFT.cycles += 1
         print("--- End Cycle ---")
     except Exception as e:
@@ -89,7 +90,10 @@ def run_slc_driver(request_list, LIFT: LIFT_SYSTEM):
         with open(BDD_TABLE_PATH, "rb") as f:
             BDD_Table = pickle.load(f)
         print("BDD Table loaded successfully.")
-        print(BDD_Table)
+        BDD_Table = sorted(BDD_Table, key=lambda x: x.serial_num)
+        for i in range(len(BDD_Table)):
+            print(f"Node {i}: {BDD_Table[i]}")
+        
         
         
         # Runnin THE LIFT SYSTEM 
