@@ -26,7 +26,12 @@ supports multiple concurrent lift calls.
 ------- moving lift floor calls (from inside the lift)----------
 Lift can be called from inside the lift while the lift is moving 
     - if the call is in the same direction as the lift, it will stop at the requested floor
-    - if the call is in the opposite direction, it will be added to the queue and served after the current request
+    - if the call is in the opposite direction, it will be ignored ...as not valid direction, if no valid call for the entire dureation...close door and go waiting
+
+
+
+    
+
 
 
 
