@@ -13,21 +13,39 @@ class MotorController:
         
         # Set up GPIO pin numbering to physical layout
         GPIO.setmode(GPIO.BOARD)
-        LIFT_MOTOR_PIN = 11  
-        DOOR_MOTOR_PIN = 12 
-        GPIO.setup(LIFT_MOTOR_PIN, GPIO.OUT)
-        GPIO.setup(DOOR_MOTOR_PIN, GPIO.OUT)
+        self.LIFT_MOTOR_PIN = 11  
+        self.DOOR_MOTOR_PIN = 12 
+        GPIO.setup(self.LIFT_MOTOR_PIN, GPIO.OUT)
+        GPIO.setup(self.DOOR_MOTOR_PIN, GPIO.OUT)
 
         # Initialize PWM with 50Hz frequency
-        self.lift_pwm = GPIO.PWM(LIFT_MOTOR_PIN, 50) #p
+        self.lift_pwm = GPIO.PWM(self.LIFT_MOTOR_PIN, 50) #p
         # Initialize PWM for door motor
-        self.door_pwm = GPIO.PWM(DOOR_MOTOR_PIN, 50)
+        self.door_pwm = GPIO.PWM(self.DOOR_MOTOR_PIN, 50)
         
         self.lift_pwm.start(0)
         self.door_pwm.start(0)
         
-        self.FLOOR_DELTA = 2 #  
-        self.DOOR_DELTA = 6 #
+        self.angle_to_duty_cycle = {
+            0: 2.5,
+            30: 3.5,
+            60: 4.5,
+            #75: 5.0,
+            90: 5.5,
+            120: 6.5,
+            #135: 7.5,
+            150: 8.5,
+            #165: 9.5,
+            180: 10.0
+        }
+        
+    def setAngle(self, angle):
+        duty = angle / 18 + 3
+        #GPIO.output(self.LIFT_MOTOR_PIN, True)
+        self.lift_pwm.ChangeDutyCycle(duty)
+        sleep(1)
+        #GPIO.output(self.LIFT_MOTOR_PIN, False)
+        #self.lift_pwm.ChangeDutyCycle(duty)
 
     def set_servo_angle(self, angle):
         # Logic to control the servo (this is hardware-dependent)
@@ -63,25 +81,11 @@ class MotorController:
     def test_run(self):
         try:
             while True:
-                # Move the servo back and forth
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + self.FLOOR_DELTA)  # Move servo to one position
-                sleep(2)
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + 2*self.FLOOR_DELTA) 
-                sleep(2)
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + 3*self.FLOOR_DELTA) 
-                sleep(2)
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + 4*self.FLOOR_DELTA)  # Move servo to the other position
-                sleep(2)
+                for ang, val in self.angle_to_duty_cycle.items():
+                  self.setAngle(val)
+                  print(ang, val)
+                  sleep(2)
                 
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + 4*self.FLOOR_DELTA)  # Move servo to the other position
-                sleep(2)
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + 3*self.FLOOR_DELTA) 
-                sleep(2)
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + 2*self.FLOOR_DELTA) 
-                sleep(2)
-                self.lift_pwm.ChangeDutyCycle(self.lift_position + self.FLOOR_DELTA)  # Move servo to one position
-                sleep(2)
-
         except KeyboardInterrupt:
             # Handle interrupt gracefully (e.g., Ctrl+C)
             print("Program interrupted, cleaning up...")
