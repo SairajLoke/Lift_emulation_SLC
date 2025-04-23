@@ -5,7 +5,7 @@ Door stays open when weight exceeds threshold.??
 
 ------------------Lift Movement-------------------
 wrong direction key?....ignored till the first destination reached
-
+anytine floors are served from inside 
 
 
 

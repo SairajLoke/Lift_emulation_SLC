@@ -61,6 +61,7 @@ class ControlMemoryFunctions:
         lift.current_direction = lift.target_floor > lift.HOME_FLOOR 
         request_list.append((FLOOR_REQUEST, lift.target_floor, lift.current_direction))  
         lift.is_idle = True
+        lift.idle_time = 0
         lift.current_state_index = self.state_index_map["IDLE"]
         
         lift.previous_state_index = lift.current_state_index #as reaches state 0

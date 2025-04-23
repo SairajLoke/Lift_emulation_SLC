@@ -45,7 +45,7 @@ def run_merged_gui(request_list, lift_obj):
                 messagebox.showerror("Invalid input", f"Floor must be between {MIN_FLOOR} and {MAX_FLOOR}")
                 return
             
-            if (lift_obj.previous_required_direction == (floor > lift_obj.current_floor)) :
+            if (lift_obj.previous_required_direction == (floor > lift_obj.current_floor)) or (len(request_list) != 0): #allow invalid direction floor reqs if atleast 1 valid floor num
                 req_msg = (FLOOR_REQUEST, floor, lift_obj.previous_required_direction)
                 request_list.append(req_msg)
             
@@ -86,7 +86,7 @@ def run_merged_gui(request_list, lift_obj):
 
         main_frame = ttk.Frame(root, padding=10)
         main_frame.grid(row=0, column=0, sticky=tk.NSEW)
-        root.columnconfigure(0, weight=1)
+        # root.columnconfigure(0, weight=1)
 
 
         # LEFT-MOST PANEL: Floor Request (Inside Elevator)
@@ -120,6 +120,26 @@ def run_merged_gui(request_list, lift_obj):
         listbox.grid(column=0, row=5, columnspan=3, pady=5)
 
         # RIGHT PANEL: Lift State Viewer
+        # state_frame = ttk.LabelFrame(main_frame, text="Lift System State", padding=10)
+        # state_frame.grid(row=0, column=2, padx=10, pady=10, sticky=tk.N)
+
+        # fields = [
+        #     "current_floor", "target_floor", "door_closed", "is_idle",
+        #     "current_weight", "idle_time", "floor_request_wait_time",
+        #     "loop_counter", "cycles", "table_index"
+        # ]
+        # value_labels = {}
+        # for idx, field in enumerate(fields):
+        #     ttk.Label(state_frame, text=field.replace('_', ' ').capitalize() + ":").grid(row=idx, column=0, sticky=tk.W)
+        #     value = ttk.Label(state_frame, text="--")
+        #     value.grid(row=idx, column=1)
+        #     value_labels[field] = value
+
+        # ttk.Label(state_frame, text="Current FSM State:").grid(row=len(fields), column=0, sticky=tk.W)
+        # state_label = ttk.Label(state_frame, text="--", font=("Arial", 12, "bold"))
+        # state_label.grid(row=len(fields), column=1)
+        
+        # RIGHT PANEL: Lift State Viewer
         state_frame = ttk.LabelFrame(main_frame, text="Lift System State", padding=10)
         state_frame.grid(row=0, column=2, padx=10, pady=10, sticky=tk.N)
 
@@ -135,9 +155,26 @@ def run_merged_gui(request_list, lift_obj):
             value.grid(row=idx, column=1)
             value_labels[field] = value
 
+        # FSM State label
         ttk.Label(state_frame, text="Current FSM State:").grid(row=len(fields), column=0, sticky=tk.W)
         state_label = ttk.Label(state_frame, text="--", font=("Arial", 12, "bold"))
         state_label.grid(row=len(fields), column=1)
+
+        # Separator
+        ttk.Separator(state_frame, orient='horizontal').grid(row=len(fields)+1, columnspan=2, sticky="ew", pady=10)
+
+        # Constants Section (shown in bold or black)
+        constants = {
+            "HOME_FLOOR": 0,
+            "MAX_IDLE_TIME (s)": int(0.3 * 60),
+            "MAX_FLOOR_REQUEST_WAIT_TIME (s)": int(0.15 * 60),
+            "MAX_WEIGHT (kg)": 700,
+        }
+
+        for idx, (label, val) in enumerate(constants.items(), start=len(fields)+2):
+            ttk.Label(state_frame, text=label + ":", foreground="black", font=('Arial', 10, 'bold')).grid(row=idx, column=0, sticky=tk.W)
+            ttk.Label(state_frame, text=str(val), foreground="black", font=('Arial', 10, 'bold')).grid(row=idx, column=1)
+
 
 
             # Bottom Panel: Horizontal Request List View
