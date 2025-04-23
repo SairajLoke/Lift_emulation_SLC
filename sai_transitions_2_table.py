@@ -2,6 +2,7 @@ import re
 import pickle
 import os
 from collections import defaultdict
+import json
 
 TRANSITIONS_FILE_PATH = "data/moore_transitions.txt"
 AND = "&"
@@ -224,3 +225,35 @@ if __name__ == "__main__":
         pickle.dump(TABLE_NEXT_STATE_MAPPING, f)
 
 
+    txt_lines = []
+    header = f"{'Serial':<8} | {'Type':<5} | {'Index':<6} | {'Succ 0':<7} | {'Succ 1':<7} | {'BDD Name':<15}"
+    separator = "-" * len(header)
+    txt_lines.append(header)
+    txt_lines.append(separator)
+
+    for entry in sorted_table:
+        line = f"{entry.serial_num:<8} | {entry.node_type:<5} | {entry.node_index:<6} | {str(entry.successor_0):<7} | {str(entry.successor_1):<7} | {entry.BDD_NAME:<15}"
+        txt_lines.append(line)
+
+    # Write to file
+    with open("data/table_next_state_mapping.txt", "w") as f:
+        f.write("\n".join(txt_lines))
+
+    print("Text table saved to data/table_next_state_mapping.txt")
+    # # Optional: Save as JSON
+    # def serialize_entry(entry):
+    #     return {
+    #         "serial_num": entry.serial_num,
+    #         "node_type": entry.node_type,
+    #         "node_index": entry.node_index,
+    #         "successor_0": entry.successor_0,
+    #         "successor_1": entry.successor_1,
+    #         "BDD_NAME": entry.BDD_NAME,
+    #     }
+
+    # json_serializable_table = [serialize_entry(entry) for entry in sorted_table]
+
+    # with open("data/table_next_state_mapping.json", "w") as f:
+    #     json.dump(json_serializable_table, f, indent=4)
+
+    # print("Saved both pickle and JSON versions of the state mapping table.")

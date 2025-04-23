@@ -51,7 +51,7 @@ class LIFT_SYSTEM:
         self.current_state_index = 0
         self.previous_state_index = 0
         self.current_direction = 0
-        self.previous_required_direction = 0
+        self.previous_required_direction = None #should be 0 as checked in relative floors
         self.current_floor = 0
         self.target_floor = 0
         # self.current_state_name = "WAITING"
@@ -94,6 +94,7 @@ class LIFT_SYSTEM:
         # self.target_floor = request_list[0][1] if len(request_list) > 0 else self.target_floor
         
         # Update conditions based on the request list
+        # this is the x in the BDD
         self.condition = {
             1: len(request_list) > 0,  # IS_CALLED
             2: self.idle_time >= self.MAX_IDLE_TIME and not self.is_idle,  # IS_IDLE_TIMED #this removes unnecessary calls to homing when already idle
@@ -101,7 +102,7 @@ class LIFT_SYSTEM:
             4: self.current_floor == self.target_floor,  # IS_TARGET_REACHED  
             5: self.is_idle,  # IS_LIFT_IDLE
             6: self.current_floor in [req[1] for req in request_list if req[2] == self.current_direction] ,# ie self.current_floor in request_list with same direction request,  # IS_VALID_STOP..not stopping for now
-            7: 0, #self.current_weight > self.MAX_WEIGHT,  # IS_OVERLOADED    
+            7: self.current_weight > self.MAX_WEIGHT,  # IS_OVERLOADED    
             8: len(request_list) > 0 and self.floor_request_wait_time > self.MAX_FLOOR_REQUEST_WAIT_TIME , #maybe something else could be done #self.current_floor in request_list,  # IS_VALID_FLOOR_REQUESTS
             9: self.floor_request_wait_time > self.MAX_FLOOR_REQUEST_WAIT_TIME,  # IS_FLOORREQ_WAITTIME_OUT
             10: len(request_list) == 0,  # IS_QUEUE_EMPTY             
@@ -110,7 +111,3 @@ class LIFT_SYSTEM:
         
 
 BDDNode = namedtuple('BDDNode', [ 'serial', 'node_type', 'node_index', 'successor_0', 'successor_1', 'BDD_name'])
-
-# TODO to look into control memory
-# ControlMemoryEntry = namedtuple('ControlMemoryEntry', ['control', 'imm_transition'])
-

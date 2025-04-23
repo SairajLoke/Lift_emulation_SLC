@@ -45,10 +45,13 @@ class ControlMemoryFunctions:
     def handle_waiting_state(self, lift: LIFT_SYSTEM, request_list, motor_controller):
         print("\n@@@ Lift is in WAITING state...")
         # simply wait for lift call requests..not idle yet
-        lift.idle_time = int(time.time() - lift.idle_start_time) 
         lift.current_state_index = self.state_index_map["WAITING"]
-        if lift.previous_state_index != self.state_index_map["WAITING"]:
+        
+        if lift.previous_state_index != self.state_index_map["WAITING"]: #when prev is same..i dont set time..so no idle is handled 
             lift.idle_start_time = time.time()
+        
+        if lift.previous_state_index == self.state_index_map["WAITING"]: #update idle timee only if pev was a waiting state..avoids direct transitions to idle after long time in floor r eqwaits
+            lift.idle_time = int(time.time() - lift.idle_start_time) 
         
         
         print(f"lift idle time: {lift.idle_time} seconds ? {lift.MAX_IDLE_TIME} seconds")
@@ -58,8 +61,9 @@ class ControlMemoryFunctions:
     def handle_idle_state(self, lift: LIFT_SYSTEM, request_list, motor_controller):
         print(f"\n@@@ Lift is idle at floor {lift.current_floor}, Homing to floor {lift.target_floor}...")
         lift.target_floor = lift.HOME_FLOOR  
-        lift.current_direction = lift.target_floor > lift.HOME_FLOOR 
+        lift.current_direction = lift.target_floor > lift.current_direction #whaat ..why was this home floor (2nd word)
         request_list.append((FLOOR_REQUEST, lift.target_floor, lift.current_direction))  
+        
         lift.is_idle = True
         lift.idle_time = 0
         lift.current_state_index = self.state_index_map["IDLE"]
@@ -73,6 +77,7 @@ class ControlMemoryFunctions:
             raise ValueError("Request list is empty, cannot add new request.")
         #approp additiona of q requested queue is done in gui part
         lift.is_idle = False  
+        lift.idle_time = 0
         lift.current_state_index = self.state_index_map["QUEUE_UPDATED"]
         
         
@@ -97,7 +102,7 @@ class ControlMemoryFunctions:
         
         type, floor, direction = request_list[0]  # Assuming the first request is the target
         lift.target_floor = floor #assuming non-empty request list (check done in conditions)
-        lift.current_direction = direction #or floor > lift.current_floor..same ig
+        lift.current_direction = floor > lift.current_floor #direction #or floor > lift.current_floor..same ig..not really when a simple floor is added..there is nodirection with it ...this gives issue witht hte motor movement
         print(f"direction comparisons {floor > lift.current_floor} = {direction}")
         lift.current_state_index = self.state_index_map["TARGET_SET"]
         
@@ -108,10 +113,14 @@ class ControlMemoryFunctions:
         print(f"\n@@@ Lift Request Queue popped {request_list[0]}, processing next request...Remaining requests: {len(request_list)}")
         if len(request_list) == 0: # Assuming the request list is not empty checked in conditions
             raise ValueError("Request list is empty, cannot pop request.")
+        type, floor, direction = request_list[0]  # Assuming the first request is the target
         request_list.pop(0)  # Remove the first request after processing it
         lift.current_state_index = self.state_index_map["QUEUE_POPPED"]
         
-        lift.previous_state_index = lift.current_state_index #as reaches state 0
+        if len(request_list) == 0 and type == FLOOR_REQUEST: #so i remove the direction if it was a floor request serve...so bascially make it strict if it was a lift call
+            lift.previous_required_direction = None
+        else:
+            lift.previous_state_index = lift.current_state_index #as reaches state 0
 
 
     def handle_door_opened_state(self, lift: LIFT_SYSTEM, request_list, motor_controller):
@@ -165,6 +174,9 @@ class ControlMemoryFunctions:
     def handle_overloaded_state(self, lift: LIFT_SYSTEM, request_list, motor_controller):
         print(f"\n@@@ Lift is overloaded! motors:  check: {lift.motors_stopped}")
         lift.current_state_index = self.state_index_map["OVERLOADED"]
+        lift.floor_request_wait_start_time = time.time()  # Start the timer for floor request wait time afresh after every overload check
+        # lift.floor_request_wait_time = 0 #so that enought time after overload removed 
+
         # TODO play alarm , Handle the overloaded situation, e.g., prevent movement, alarm, etc.
         # motor_controller.stop()  # already stopped at this moment
         print("Lift stopped due to overload.")
@@ -199,7 +211,7 @@ class ControlMemoryFunctions:
         lift.previous_state_index = lift.current_state_index #as reaches state 0
 
 
-#I'm following the structure in the CS426 , gourinath sir's handbook 
+#reference CS426 , gourinath sir's handbook 
 class ControlMemoryEntry:
     def __init__(self, control=None, imm_transition=False):
         self.control = control  # This will hold function references that interact with motors

@@ -3,16 +3,16 @@
 ## installations
 pip -r requirements.txt 
 sudo apt-get install python3-tk graphviz
-pip install RPi.GPIO
-
-sudo apt install python3-rpi-lgpio
-
+<!-- pip install RPi.GPIO -->
 sudo apt remove python3-rpi.gpio
+sudo apt install python3-rpi-lgpio
 
 
 ## RUN
 python3 sai_graph_generator.py 
 python3 sai_transitions_2_table.py 
+python3 sai_main_lift_system.py
+
 sudo apt update
 sudo apt install python3-pynput
 sudo apt install python3-rpi.gpio
@@ -41,3 +41,10 @@ After getting in lift one must press a floor in correct direction ...else we wai
 -   Floor request handling
 
 - I also provide an option to create space optimized state-transition table..that removes repeated entries of same stae but in different BDDs 
+
+
+# Future Directions
+
+1. Doing more stress testing on the latency aspect
+2. Thread safe queues/list to be used.
+3. Provide parallel process support (using multiprocessing.Dequeue()/ Queue()) ...wont give signi benefit i believe as the viz cide is light? and has 3 fns running...also no visible performance loss in current threadeding env

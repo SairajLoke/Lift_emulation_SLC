@@ -25,32 +25,30 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, moto
         is_state = 0 #bool to if it's a state or action node
         index = BDD_Table[LIFT.table_index].node_index    #state/ variable subscript number 
         
-        while True : # may be ? LIFT.loop_counter < LIFT.MAX_EXECUTION_TIME:, no separate do while loop in python 
+        while True : # no separate do while loop in python 
             
             node = BDD_Table[LIFT.table_index]
             print(f"Visiting node {LIFT.table_index}: Type={node.node_type}, Index={node.node_index}, Successors=({node.successor_0}, {node.successor_1})")
-            # time.sleep(1)
-            state = node.node_type + str(node.node_index)
+            var = node.node_type + str(node.node_index)
             if LIFT.condition == None:
                 print("Condition is None, exiting current cycle.")
                 break
             
             if node.node_type == 'x':
+                print(f"[============= In conditional: {var} =================]")
                 if LIFT.condition[node.node_index] == 0:
                     LIFT.table_index = node.successor_0
                 else:
                     LIFT.table_index = node.successor_1
 
             elif node.node_type == 'a':
-                print(f"[============= In state/var: {state}, {LIFT.state_name_map[state]} =================]")
-
+                print(f"[============= In state: {var}, {LIFT.state_name_map[var]} =================]")
                 is_state = 1
-                # print(f"\n---- Action node {LIFT.table_index}: Executing action {LIFT.state_name_map[state]} ----")
-                # if control_memory[index].control is not None:
-                #     print("Executing control:", control_memory[index].control)
-                    # Simulate output action, e.g., Y1, Y2, etc.
                 LIFT.table_index = node.successor_1
-                control_memory.control_memory_array[index].control(LIFT, request_list, motor_controller)
+
+                # Simulate output action, e.g., Y1, Y2, etc.
+                if control_memory.control_memory_array[index].control is not None:
+                    control_memory.control_memory_array[index].control(LIFT, request_list, motor_controller)
                 
                 #-------------------------------------------stupid debugging
                 # LIFT.current_floor += 1
@@ -59,7 +57,6 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, moto
                 #         request_list.pop(0)  # Remove the first request
                 #     LIFT.current_floor = 0
                 #------------------------------------------
-
 
             index = BDD_Table[LIFT.table_index].node_index
             print(" Current state index:", LIFT.table_index)
@@ -82,18 +79,17 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, moto
 
 def run_slc_driver(request_list, LIFT: LIFT_SYSTEM):
     try:
-        # Initializing the SLC system and loadin the BDD table
-        # LIFT = LIFT_SYSTEM() 
+        # Initializing 
         control_memory = ControlMemory()
         motor_controller = MotorController()
         
+        # Loadin BDD Table
         with open(BDD_TABLE_PATH, "rb") as f:
             BDD_Table = pickle.load(f)
         print("BDD Table loaded successfully.")
         BDD_Table = sorted(BDD_Table, key=lambda x: x.serial_num)
         for i in range(len(BDD_Table)):
             print(f"Node {i}: {BDD_Table[i]}")
-        
         
         
         # Runnin THE LIFT SYSTEM 
@@ -115,11 +111,9 @@ def run_slc_driver(request_list, LIFT: LIFT_SYSTEM):
             if remaining_time > 0:
                 time.sleep(remaining_time)
                 
-                
+    
         # CLEAN UP
         # print("Stopping SLC driver.")
-        
-        
                 
     except Exception as e:
         print(f"Stopping SLC driver. due to {e}")

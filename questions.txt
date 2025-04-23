@@ -1,0 +1,9 @@
+1. hwos the stop event working 
+
+2. check what type of exectution u r doing...also read slides on other takss...the exec time , E, C and D ...
+some other realted to structure of mhy code and the concepts
+
+
+3. draw a moore machine? for the request thread? (floor,call,weight)
+
+4. EMERGENCY stop ( how do i represent it as a parallel process to my moore machine), 
