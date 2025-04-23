@@ -1,8 +1,13 @@
 
 Door closes after timeout when no further requests exist.
 Door opens at requested floor.
-
 Door stays open when weight exceeds threshold.??
+
+------------------Lift Movement-------------------
+wrong direction key?....ignored till the first destination reached
+
+
+
 
 ----------Homing------------------------
 System enters WAITING state on startup.
@@ -30,7 +35,7 @@ Lift can be called from inside the lift while the lift is moving
 
 
 
-    
+
 
 
 

@@ -2,8 +2,6 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
-
-
 # -------------------------------hardware control functions interfacing with servo motor-------------------------------------------
 class MotorController:
     def __init__(self):
