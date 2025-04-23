@@ -1,0 +1,39 @@
+
+Door closes after timeout when no further requests exist.
+Door opens at requested floor.
+
+Door stays open when weight exceeds threshold.??
+
+----------Homing------------------------
+System enters WAITING state on startup.
+Lift transitions to IDLE when idle time exceeds threshold.
+Homing behavior when no requests exist (idle returns to HOME_FLOOR).
+Lift remains WAITING when no requests and doors are open.
+
+-------------Request Handling-----------------
+Valid request added to queue.
+Queue is updated and next request is popped.
+Queue emptied after serving all requests.
+Redundant call is removed if floor already in queue.
+
+
+-------- Concurrent Lift Calls ----------------
+supports multiple concurrent lift calls. 
+    - if they are on the way to the first call..the lift stops if the direction matches
+    - if in different direction call the lift will put in queue but not stop while serving the first call,...will come back after serve is done
+
+
+------- moving lift floor calls (from inside the lift)----------
+Lift can be called from inside the lift while the lift is moving 
+    - if the call is in the same direction as the lift, it will stop at the requested floor
+    - if the call is in the opposite direction, it will be added to the queue and served after the current request
+
+
+
+so after 1st idle phase it goes into a waiting phase...with no more homing calls
+
+
+Call at 4, and 
+    call at 2 
+        before it passes 2
+        after it passes 2 

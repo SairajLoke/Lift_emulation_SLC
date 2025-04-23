@@ -50,6 +50,7 @@ class ControlMemoryFunctions:
         if lift.previous_state_index != self.state_index_map["WAITING"]:
             lift.idle_start_time = time.time()
         
+        
         print(f"lift idle time: {lift.idle_time} seconds ? {lift.MAX_IDLE_TIME} seconds")
         lift.previous_state_index = lift.current_state_index
         
@@ -174,15 +175,15 @@ class ControlMemoryFunctions:
         print("\n@@@ Redundant call removed...")
         # to remove redundant requests from the queue 
         if len(request_list) == 0:
-            raise ValueError("Request list is empty, cannot remove redundant call.")
-        
-        for idx, (type, floor, direction) in enumerate(request_list):
-            if floor == lift.current_floor:
-                request_list.pop(idx)  # Remove the redundant request..prolly those requests which might come from lift calls...lift might anyways go there if that floor pressed inside the lift
+            #reached the last floor and no more requests
+            print("No requests to remove.")
+        else:        
+            for idx, (type, floor, direction) in enumerate(request_list):
+                if floor == lift.current_floor:
+                    request_list.pop(idx)  # Remove the redundant request..prolly those requests which might come from lift calls...lift might anyways go there if that floor pressed inside the lift
                        
         print(f"Removed redundant request. Remaining requests: {len(request_list)}.")
         lift.current_state_index = self.state_index_map["REDUNDANT_CALL_REMOVED"]
-        
         lift.previous_state_index = lift.current_state_index #as reaches state 0
         
     def handle_motors_stopped_state(self, lift: LIFT_SYSTEM, request_list, motor_controller):

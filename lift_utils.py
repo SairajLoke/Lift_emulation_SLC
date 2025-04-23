@@ -41,8 +41,8 @@ class LIFT_SYSTEM:
     def __init__(self):
         #constants in this system=-----------------
         self.HOME_FLOOR = 0
-        self.MAX_IDLE_TIME = int(2*60) #int(0.2*60) #seconds 
-        self.MAX_FLOOR_REQUEST_WAIT_TIME = int(0.5*60) #seconds #at the end of the served floors it will wait for this time before closing the doors
+        self.MAX_IDLE_TIME = int(0.3*60) #int(0.2*60) #seconds 
+        self.MAX_FLOOR_REQUEST_WAIT_TIME = int(0.15*60) #seconds #at the end of the served floors it will wait for this time before closing the doors
         self.MAX_WEIGHT = 700 #kg
         # self.MAX_CAPACITY = 10 around 68 kg avg ig generallyh...
 
@@ -64,8 +64,8 @@ class LIFT_SYSTEM:
         
         self.is_idle = False
         self.current_weight = 0
-        self.door_closed = 0
-        self.motors_stopped = 0
+        self.door_closed = True 
+        self.motors_stopped = True
         
         #trackers
         self.loop_counter = 0
@@ -96,13 +96,13 @@ class LIFT_SYSTEM:
         # Update conditions based on the request list
         self.condition = {
             1: len(request_list) > 0,  # IS_CALLED
-            2: self.idle_time >= self.MAX_IDLE_TIME,  # IS_IDLE_TIMED
+            2: self.idle_time >= self.MAX_IDLE_TIME and not self.is_idle,  # IS_IDLE_TIMED #this removes unnecessary calls to homing when already idle
             3: self.door_closed,  # IS_DOOR_CLOSED
             4: self.current_floor == self.target_floor,  # IS_TARGET_REACHED  
             5: self.is_idle,  # IS_LIFT_IDLE
-            6: 0,# ie self.current_floor in request_list,  # IS_VALID_STOP..not stopping for now
+            6: self.current_floor in [req[1] for req in request_list if req[2] == self.current_direction] ,# ie self.current_floor in request_list with same direction request,  # IS_VALID_STOP..not stopping for now
             7: 0, #self.current_weight > self.MAX_WEIGHT,  # IS_OVERLOADED    
-            8: len(request_list) > 0, #maybe something else could be done #self.current_floor in request_list,  # IS_VALID_FLOOR_REQUESTS
+            8: len(request_list) > 0 and self.floor_request_wait_time > self.MAX_FLOOR_REQUEST_WAIT_TIME , #maybe something else could be done #self.current_floor in request_list,  # IS_VALID_FLOOR_REQUESTS
             9: self.floor_request_wait_time > self.MAX_FLOOR_REQUEST_WAIT_TIME,  # IS_FLOORREQ_WAITTIME_OUT
             10: len(request_list) == 0,  # IS_QUEUE_EMPTY             
         }
