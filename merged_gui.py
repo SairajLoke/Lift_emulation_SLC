@@ -30,7 +30,7 @@ def run_merged_gui(request_list, lift_obj):
                 messagebox.showerror("Invalid input", f"Floor must be between {MIN_FLOOR} and {MAX_FLOOR}")
                 return
             req_msg = (LIFT_CALL, floor, direction)  # Changed from set to tuple
-            lift_obj.previous_req_direction = direction
+            lift_obj.previous_required_direction = direction
             request_list.append(req_msg)
             # update_listbox()
             floor_entry.delete(0, tk.END)
@@ -45,8 +45,8 @@ def run_merged_gui(request_list, lift_obj):
                 messagebox.showerror("Invalid input", f"Floor must be between {MIN_FLOOR} and {MAX_FLOOR}")
                 return
             
-            if (lift_obj.previous_req_direction == (floor > lift_obj.current_floor)) :
-                req_msg = (FLOOR_REQUEST, floor, lift_obj.previous_req_direction)
+            if (lift_obj.previous_required_direction == (floor > lift_obj.current_floor)) :
+                req_msg = (FLOOR_REQUEST, floor, lift_obj.previous_required_direction)
                 request_list.append(req_msg)
             
             floor_req_entry.delete(0, tk.END)

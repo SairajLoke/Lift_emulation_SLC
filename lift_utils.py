@@ -51,7 +51,7 @@ class LIFT_SYSTEM:
         self.current_state_index = 0
         self.previous_state_index = 0
         self.current_direction = 0
-        self.prev_req_direction = 0
+        self.previous_required_direction = 0
         self.current_floor = 0
         self.target_floor = 0
         # self.current_state_name = "WAITING"
