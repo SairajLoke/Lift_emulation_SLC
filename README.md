@@ -4,7 +4,7 @@
 ## Keypoints
 
 1. Automated Moore Machine Digram, Transition Fns Extraction, BDD Table from Transition functions
-2. I also provide an option to create space optimized state-transition table..that removes repeated entries of same stae but in different BDDs 
+2. I also provide an option to have state-transition table..that doesnt allow repeated entries of same stae but in different BDDs 
 3. RPI + Servo Motor based H/W implementation 
 4. GUI for testing , emulation ( code can be demonstrated and tested wihout H/W)
 
