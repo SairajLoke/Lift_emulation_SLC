@@ -2,31 +2,26 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
-'''
-lift_motor: 35kg, pin: 4(5V),6(GRND),8(control)
-door_motor: 25kg, pin: 2(5V),5(GRND),7(control)
-
-'''
 
 
 # -------------------------------hardware control functions interfacing with servo motor-------------------------------------------
 class MotorController:
     def __init__(self):
         # Initialize any hardware communication (e.g., GPIO, I2C, etc.)
-        self.current_floor = 0  
+        self.lift_position = 0  
         self.door_position = 0
         
         # Set up GPIO pin numbering to physical layout
         GPIO.setmode(GPIO.BOARD)
-        self.LIFT_MOTOR_PIN = 8  #35kg one 
-        self.DOOR_MOTOR_PIN = 7
-        GPIO.setup(self.LIFT_MOTOR_PIN, GPIO.OUT)
-        GPIO.setup(self.DOOR_MOTOR_PIN, GPIO.OUT)
+        LIFT_MOTOR_PIN = 11  
+        DOOR_MOTOR_PIN = 12 
+        GPIO.setup(LIFT_MOTOR_PIN, GPIO.OUT)
+        GPIO.setup(DOOR_MOTOR_PIN, GPIO.OUT)
 
         # Initialize PWM with 50Hz frequency
-        self.lift_pwm = GPIO.PWM(self.LIFT_MOTOR_PIN, 50) 
+        self.lift_pwm = GPIO.PWM(LIFT_MOTOR_PIN, 50) #p
         # Initialize PWM for door motor
-        self.door_pwm = GPIO.PWM(self.DOOR_MOTOR_PIN, 50)
+        self.door_pwm = GPIO.PWM(DOOR_MOTOR_PIN, 50)
         
         self.lift_pwm.start(0)
         self.door_pwm.start(0)
@@ -35,63 +30,52 @@ class MotorController:
             0: 2.5,
             30: 3.5,
             60: 4.5,
-            #75: 5.0,
+            75: 5.0,
             90: 5.5,
             120: 6.5,
-            #135: 7.5,
+            135: 7.5,
             150: 8.5,
-            #165: 9.5,
-            #180: 10.0  # doesnt give any deflection or both vals
+            165: 9.5,
+            180: 10.0
         }
-        
-        self.floor_duty_map = {#duty = angle / 18 + 3
-            0: 3,     #0, 
-            1: 4.66,  #30,
-            2: 6.66,  #60,
-            3: 8 ,    #90,
-            4: 9.66 , #120,
-            5: 11.33 ,#150
-        }
-        
-        self.door_duty_map = {
-            0: 3,  #0 , close
-            1: 8,  #90 , open
-        }
-        
-    #def set_servo_angle(self, servo_pwm, duty):
-     #   print(f"Setting servo to {angle} degrees.")
-        
+
+    def set_servo_angle(self, angle):
+        # Logic to control the servo (this is hardware-dependent)
+        print(f"Setting servo to {angle} degrees.")
+        self.servo_position = angle
+        # Here you could communicate with the actual hardware to move the servo.
+
     def open_door(self):
-        self.door_pwm.ChangeDutyCycle(self.door_duty_map[1])
+        # For example, opening the door could mean setting the servo to 90 degrees
+        self.set_servo_angle(90)
         print("Door opened.")
 
     def close_door(self):
-        self.door_pwm.ChangeDutyCycle(self.door_duty_map[0])
-        print("Door Closed.")
+        # Closing the door could mean setting the servo to 0 degrees
+        self.set_servo_angle(0)
+        print("Door closed.")
         
     def move_up(self):
-        print("Lift moving Up.")
-        self.current_floor += 1
-        self.lift_pwm.ChangeDutyCycle(self.floor_duty_map[self.current_floor])
+        # Logic to move the lift up
+        print("Lift moving up.")
+        # Here you would add the actual code to control the lift motor.
         
     def move_down(self):
-        print("Lift moving Down.")
-        self.current_floor -= 1
-        self.lift_pwm.ChangeDutyCycle(self.floor_duty_map[self.current_floor])
+        # Logic to move the lift down
+        print("Lift moving down.")
+        # Here you would add the actual code to control the lift motor.
         
     def stop_motors(self):
+        # Logic to stop the lift motors
         print("Lift motors stopped.")
-        self.lift_pwm.ChangeDutyCycle(self.floor_duty_map[self.current_floor])
+        # Here you would add the actual code to stop the lift motor.
         
     def test_run(self):
         try:
-           
             while True:
-                for angle, value in self.angle_to_duty_cycle.items():
-                  duty = angle / 18 + 3
-                  self.lift_pwm.ChangeDutyCycle(duty)
-                  self.door_pwm.ChangeDutyCycle(duty)
-                  print(angle, duty)
+                for ang, val in self.angle_to_duty_cycle.items():
+                  self.lift_pwm.ChangeDutyCycle(2)
+                  print(ang, val)
                   sleep(2)
                 
         except KeyboardInterrupt:

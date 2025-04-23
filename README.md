@@ -3,11 +3,19 @@
 ## installations
 pip -r requirements.txt 
 sudo apt-get install python3-tk graphviz
+pip install RPi.GPIO
+
+sudo apt install python3-rpi-lgpio
+
+sudo apt remove python3-rpi.gpio
+
 
 ## RUN
 python3 sai_graph_generator.py 
 python3 sai_transitions_2_table.py 
-
+sudo apt update
+sudo apt install python3-pynput
+sudo apt install python3-rpi.gpio
 
 
 Debugging each terms in the individual steps (transition graphs, eqns, table) was hard...so i automated the creation given just a flow_chart 
