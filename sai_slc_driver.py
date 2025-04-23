@@ -7,7 +7,9 @@ import pickle
 from collections import deque
 
 from lift_utils import  MIN_FLOOR, MAX_FLOOR, LIFT_CALL, FLOOR_REQUEST
-from lift_utils import TABLE_ELEMENTS_NEXT_STATE_MAPPING , LIFT_SYSTEM, ControlMemory
+from lift_utils import TABLE_ELEMENTS_NEXT_STATE_MAPPING , LIFT_SYSTEM
+from control_memory import ControlMemory
+from motor_controller import MotorController
 
 #global variables---------------------------------------------------------
 BDD_TABLE_PATH = "data/table_next_state_mapping.pkl"
@@ -15,15 +17,13 @@ BDD_TABLE_PATH = "data/table_next_state_mapping.pkl"
 
     
 
-def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory): #ControlMemory):
-    
+def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, motor_controller): #ControlMemory):
     try :
         print("\n\nO----------    New Cycle    ---------O")
         print(f"Request: {request_list}")
             
         is_state = 0 #bool to if it's a state or action node
         index = BDD_Table[LIFT.table_index].node_index    #state/ variable subscript number 
-        
         
         while True : # may be ? LIFT.loop_counter < LIFT.MAX_EXECUTION_TIME:, no separate do while loop in python 
             node = BDD_Table[LIFT.table_index]
@@ -48,33 +48,30 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory): #Co
                 # if control_memory[index].control is not None:
                 #     print("Executing control:", control_memory[index].control)
                     # Simulate output action, e.g., Y1, Y2, etc.
-                LIFT.current_floor += 1
                 LIFT.table_index = node.successor_1
-                #-------------------------------------------
-                if LIFT.current_floor > 2*MAX_FLOOR:
-                    if (len(request_list)>0):
-                        request_list.pop(0)  # Remove the first request
-                    LIFT.current_floor = 0
+                control_memory.control_memory_array[index].control(LIFT, request_list, motor_controller)
+                
+                #-------------------------------------------stupid debugging
+                # LIFT.current_floor += 1
+                # if LIFT.current_floor > 2*MAX_FLOOR:
+                #     if (len(request_list)>0):
+                #         request_list.pop(0)  # Remove the first request
+                #     LIFT.current_floor = 0
                 #------------------------------------------
 
 
             index = BDD_Table[LIFT.table_index].node_index
             print(" Current state index:", LIFT.table_index)
             
-            # print('control_memory:', control_memory.control_memory_array[index])
-            # print('control_memory:', control_memory.control_memory_array[index].imm_transition)
-            
-            if (is_state == 0 and not control_memory.control_memory_array[index].imm_transition):  
+            if (is_state == 1 and not control_memory.control_memory_array[index].imm_transition):  
                 #the while in the handbook is for continuing..this logic is for breaking
                 print(f"****** No immediate transition, waiting for next condition to change ******")
                 break
             
             
             LIFT.loop_counter += 1 
-            
         LIFT.cycles += 1
         print("--- End Cycle ---")
-        
     except Exception as e:
         print(f"Error in state machine driver: {e}")
         raise
@@ -82,11 +79,12 @@ def slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory): #Co
 
 
 
-def run_slc_driver(request_list, LIFT):
+def run_slc_driver(request_list, LIFT: LIFT_SYSTEM):
     try:
         # Initializing the SLC system and loadin the BDD table
         # LIFT = LIFT_SYSTEM() 
-        control_memory = ControlMemory(LIFT.state_name_map)
+        control_memory = ControlMemory()
+        motor_controller = MotorController()
         
         with open(BDD_TABLE_PATH, "rb") as f:
             BDD_Table = pickle.load(f)
@@ -102,7 +100,7 @@ def run_slc_driver(request_list, LIFT):
             
             #task execution----------------------------- 
             start_time = time.time()  
-            slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory)
+            slc_state_machine_driver(request_list, LIFT, BDD_Table, control_memory, motor_controller)
             execution_time = time.time() - start_time
             print(f"Execution time: {execution_time:.2f} seconds")
             #-------------------------------------------

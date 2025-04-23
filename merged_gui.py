@@ -40,9 +40,11 @@ def run_merged_gui(request_list, lift_obj):
         if floor < MIN_FLOOR or floor > MAX_FLOOR:
             messagebox.showerror("Invalid input", f"Floor must be between {MIN_FLOOR} and {MAX_FLOOR}")
             return
-        req_msg = (FLOOR_REQUEST, floor, -1)
-        request_list.append(req_msg)
-        # update_listbox()
+        
+        if (lift_obj.previous_req_direction == (floor > lift_obj.current_floor)) :
+            req_msg = (FLOOR_REQUEST, floor, lift_obj.previous_req_direction)
+            request_list.append(req_msg)
+        
         floor_req_entry.delete(0, tk.END)
 
     def update_listbox():
