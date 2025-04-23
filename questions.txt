@@ -7,3 +7,5 @@ some other realted to structure of mhy code and the concepts
 3. draw a moore machine? for the request thread? (floor,call,weight)
 
 4. EMERGENCY stop ( how do i represent it as a parallel process to my moore machine), 
+
+5. is the queue thread safe?
