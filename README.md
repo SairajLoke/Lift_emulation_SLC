@@ -9,6 +9,10 @@ Host(RPI) UI
 Actuators 
 2 Servo motors 
 
+States
+12 
+
+Condi
 
 ## Keypoints
 
@@ -76,6 +80,8 @@ Time + Interrupt Driven system
 
 
 ### SLC Code  
+
+input checked and preprocessed ( converting the input data to Boolean values to be used in SLC machine driver)
 
 ![image](https://github.com/user-attachments/assets/218f7fa3-3cab-4172-8d5f-561d52ac7c5a)
 
