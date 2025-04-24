@@ -49,6 +49,24 @@ sudo apt install python3-rpi-lgpio python3-pynput python3-tk graphviz
 <!-- sudo apt remove python3-rpi.gpio
 sudo apt install python3-rpi-lgpio -->
 
+## The System Details
+
+### Flowchart 
+
+### Moore Machine 
+![image](https://github.com/user-attachments/assets/5f17f93a-9b0f-4700-a9d3-62e2eee73d15)
+
+
+### Lift Controller State Transition Graph / Equations
+![image](https://github.com/user-attachments/assets/a2a4376b-4b05-4893-827a-5166f530df10)
+
+
+### Interface
+
+
+### SLC Code  
+
+
 
 
 
