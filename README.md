@@ -62,10 +62,12 @@ sudo apt install python3-rpi-lgpio -->
 
 
 ### Interface
+![image](https://github.com/user-attachments/assets/1b92b9d9-da82-4b7b-951e-916066fbbfd2)
 
 
 ### SLC Code  
 
+![image](https://github.com/user-attachments/assets/218f7fa3-3cab-4172-8d5f-561d52ac7c5a)
 
 
 
