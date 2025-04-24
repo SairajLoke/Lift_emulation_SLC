@@ -1,5 +1,7 @@
 # Lift_emulation_SLC
 
+## TODO 
+
 
 ## Keypoints
 
@@ -11,7 +13,7 @@
 
 ## Features of the LIFT System
 -   Queue management for floor requests
--   Concurrent Lift Call Support
+-   Threading Support for Lift Call/Floor Request
 -   Up/Down logic with lifts floors ( 2U-3 1D-0 ) (Function Call-Destination FLoor, ..., )
 
 -   Door operations
@@ -25,25 +27,36 @@
 
 ## Handbook Lift Limitations
 Lift can only take new Lift Calls once it is done serving the current
+(so all Lift calls done while lift in motion are ignored)
 
-## installations
+no weight checks, 
+no up/down direction logic
+no Homing
+no IDLE-state detection
+no multple floor request serve
+
+
+## Installations
 pip -r requirements.txt 
-sudo apt-get install python3-tk graphviz
+
+OR 
+
+sudo apt update
+
+sudo apt install python3-rpi-lgpio python3-pynput python3-tk graphviz
+
+<!-- sudo apt-get install python3-tk graphviz -->
 <!-- pip install RPi.GPIO -->
-sudo apt remove python3-rpi.gpio
-sudo apt install python3-rpi-lgpio
+<!-- sudo apt remove python3-rpi.gpio
+sudo apt install python3-rpi-lgpio -->
+
+
 
 
 ## RUN
 python3 sai_graph_generator.py 
 python3 sai_transitions_2_table.py 
 python3 sai_main_lift_system.py
-
-
-sudo apt update
-sudo apt install python3-pynput
-sudo apt install python3-rpi.gpio
-
 
 Debugging each terms in the individual steps (transition graphs, eqns, table) was hard...so i automated the creation given just a flow_chart 
 
