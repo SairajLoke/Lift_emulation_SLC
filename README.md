@@ -1,6 +1,13 @@
 ![CPS2025_LIFT_EMULATION-Lift Flow Diagram drawio(5)](https://github.com/user-attachments/assets/deb4099a-b620-48ed-afd7-0745b9fe27b7)
 
-## TODO 
+
+## Setup 
+
+Inputs 
+Host(RPI) UI 
+
+Actuators 
+2 Servo motors 
 
 
 ## Keypoints
