@@ -167,6 +167,7 @@ Call at 4, and
 
 # Future Directions
 
-1. Doing more stress testing on the latency aspect
+1. use better lib than rpi.gpio, coz its not ideal for realtime ops ( as mentioned on their official Website)
+
 2. Thread safe queues/list to be used.
 3. Provide parallel process support (using multiprocessing.Dequeue()/ Queue()) ...wont give signi benefit i believe as the viz cide is light? and has 3 fns running...also no visible performance loss in current threadeding env
