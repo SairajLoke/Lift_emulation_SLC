@@ -50,11 +50,13 @@ sudo apt install python3-rpi-lgpio python3-pynput python3-tk graphviz
 sudo apt install python3-rpi-lgpio -->
 
 ## The System Details
+Time + Interrupt Driven system
 
 ![image](https://github.com/user-attachments/assets/fc058f6a-3e4f-4a59-934e-0e79bf45731c)
 
 
 ### Moore Machine 
+
 ![image](https://github.com/user-attachments/assets/5f17f93a-9b0f-4700-a9d3-62e2eee73d15)
 
 
@@ -149,7 +151,8 @@ NOTE:
 actually the floor req shouldn't ideally work unless the firsttime the door opens
 weight can actually be added just after wait time and just before door close...but not practically large time 
 
-
+improvement would be to move it outside computing control signals (folowing the 4 steps here ) 
+![image](https://github.com/user-attachments/assets/d92e2b9d-85a4-4021-b093-1dc62423587d)
 
 
 
