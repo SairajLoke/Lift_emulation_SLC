@@ -26,14 +26,13 @@
 
 
 ## Handbook Lift Limitations
-Lift can only take new Lift Calls once it is done serving the current
-(so all Lift calls done while lift in motion are ignored)
-
-no weight checks, 
-no up/down direction logic
-no Homing
-no IDLE-state detection
-no multple floor request serve
+- Lift can only take new Lift Calls once it is done serving the current
+- (so all Lift calls done while lift in motion are ignored)
+- no weight checks, 
+- no up/down direction logic
+- no Homing
+- no IDLE-state detection
+- no multple floor request serve
 
 
 ## Installations
@@ -55,7 +54,9 @@ sudo apt install python3-rpi-lgpio -->
 
 ## RUN
 python3 sai_graph_generator.py 
+
 python3 sai_transitions_2_table.py 
+
 python3 sai_main_lift_system.py
 
 Debugging each terms in the individual steps (transition graphs, eqns, table) was hard...so i automated the creation given just a flow_chart 
@@ -67,6 +68,7 @@ Debugging each terms in the individual steps (transition graphs, eqns, table) wa
 
 
 =================== Current Not so ideal behaviour ===============
+
 if lift calls at floor 1,2,3,4 in that order...(say all want to go at floor 0)
     , even if person on 1st floor presses 0 inside lift, the lift will serve 2-4 first
     this is coz the serves are completely FCFS basis 
@@ -79,17 +81,20 @@ also observed if i press 1-down , 2-up, 3-down, lift will take all calls
 
 
 -----------------DOOR OPERATIONS------------------
+
 Door closes after timeout when no further requests exist.
 Door opens at requested floor.
 Door stays open when weight exceeds threshold.??
 
 ------------------Lift Movement-------------------
+
 wrong direction key?....ignored till the first destination reached
 anytine floors are served from inside 
 
 
 
 ---------------------Homing------------------------
+
 System enters WAITING state on startup.
 Lift transitions to IDLE when idle time exceeds threshold.
 Homing behavior when no requests exist (idle returns to HOME_FLOOR).
@@ -97,6 +102,7 @@ Lift remains WAITING when no requests and doors are open., idle_bool = true...
 
 
 ------------ Request Handling-----------------
+
 - Valid request (correct direction floor during floor request await) is added to queue.
 - Queue is updated and next request is popped.
 - Queue emptied after serving all requests
@@ -104,18 +110,21 @@ Lift remains WAITING when no requests and doors are open., idle_bool = true...
 
 
 ------------ Concurrent Lift Calls ----------------
+
 supports multiple concurrent lift calls. 
     - if they are on the way to the first call..the lift stops if the direction matches
     - if in different direction call the lift will put in queue but not stop while serving the first call,...will come back after serve is done
 
 
 ------- Moving lift floor calls (from inside the lift)----------
+
 Lift can be called from inside the lift while the lift is in any state(except before the very first lift summoning)
     - if the call is in the same direction as the lift, it will stop at the requested floor
     - if the call is in the opposite direction, it will be ignored ...as not valid direction, if no valid call for the entire dureation...close door and go waiting
 
 
 NOTE:
+
 actually the floor req shouldn't ideally work unless the firsttime the door opens
 weight can actually be added just after wait time and just before door close...but not practically large time 
 
