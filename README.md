@@ -8,6 +8,9 @@ https://github.com/user-attachments/assets/b7d06627-d9de-4dc3-a6ea-a6909f306c35
 
 Hardware Demo for above gui interface video 
 
+https://github.com/user-attachments/assets/a99d86da-1702-4508-bb41-f6a720a9e7ae
+
+
 
 
 
