@@ -1,4 +1,6 @@
-![CPS2025_LIFT_EMULATION-Lift Flow Diagram drawio(5)](https://github.com/user-attachments/assets/deb4099a-b620-48ed-afd7-0745b9fe27b7)
+
+## Demo
+
 
 
 ## Setup 
@@ -64,6 +66,8 @@ sudo apt install python3-rpi-lgpio -->
 Time + Interrupt Driven system
 
 ![image](https://github.com/user-attachments/assets/fc058f6a-3e4f-4a59-934e-0e79bf45731c)
+
+![CPS2025_LIFT_EMULATION-Lift Flow Diagram drawio(5)](https://github.com/user-attachments/assets/deb4099a-b620-48ed-afd7-0745b9fe27b7)
 
 
 ### Moore Machine 
