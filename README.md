@@ -1,5 +1,6 @@
 
-## Demo
+## Demo and ## Try it NOW !
+## Installation and Quick Testing using GUI follows this demo
 
 
 ### Case 1 other demo (as seen in the hardware video)
