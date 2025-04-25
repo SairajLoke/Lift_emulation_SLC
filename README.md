@@ -11,21 +11,32 @@ Hardware Demo for above gui interface video
 https://github.com/user-attachments/assets/a99d86da-1702-4508-bb41-f6a720a9e7ae
 
 ## Try it NOW !
+## Installation and Quick Testing using GUI 
 
+### STEP 1 :  Installations
+
+pip -r requirements.txt 
+sudo apt-get install python3-tk 
+
+sudo apt install python3-rpi-lgpio  #if you are using rpi..not needed for laptop based gui-only testing
+
+### STEP 2 : Get the Moore Machine Diagram ( I have created one which can be used for testing the lift system)  \newline AND Get Transition States for the machine ( Required for getting the BDD Next State Mapping which is used in the SLC Code )
+ python sai_graph_generator.py 
+ 
+### STEP 4 : Get the BDD Table automatically from the transition states
+ python sai_transitions_2_table.py 
+
+### STEP 5 : DONE!, run the main file to access my lift !
+ python sai_main_lift_system.py 
 
 
 ## Setup 
-
 Inputs 
-Host(RPI) UI 
+GUI 
 
 Actuators 
 2 Servo motors 
 
-States
-12 
-
-Condi
 
 ## Keypoints
 
@@ -58,15 +69,6 @@ Condi
 - no IDLE-state detection
 - no multple floor request serve
 
-
-## Installations
-pip -r requirements.txt 
-
-OR 
-
-sudo apt update
-
-sudo apt install python3-rpi-lgpio python3-pynput python3-tk graphviz
 
 <!-- sudo apt-get install python3-tk graphviz -->
 <!-- pip install RPi.GPIO -->
